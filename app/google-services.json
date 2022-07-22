@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "965958004255",
+    "project_id": "drbotv2",
+    "storage_bucket": "drbotv2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:965958004255:android:7ec52a5c535de312e02f2a",
+        "android_client_info": {
+          "package_name": "com.example.drbotv2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "965958004255-g9s8ok3dintuvmgfqgmbnlqnd0bv5ifu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEHvYFAelrNDv64n7kXFE-yZkZOlYKix8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "965958004255-g9s8ok3dintuvmgfqgmbnlqnd0bv5ifu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
