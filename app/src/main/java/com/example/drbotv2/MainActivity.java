@@ -38,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
     TextInputLayout teleHandle, password;
     String global_teleHandleStr;
 
+    String doctorTeleHandle = "doctorAdmin123";
+    String doctorPassword = "doctorPassword123";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
 
         } else if (teleHandleStr.charAt(0) == '@') {
             Toast.makeText(MainActivity.this, "Remove '@' from telegram handle", Toast.LENGTH_SHORT).show();
+        } else if (teleHandleStr.equals(doctorTeleHandle) && passwordStr.equals(doctorPassword)) {
+            toDoctorHome(view);
         } else {
             Query checkUser = reference.orderByChild("teleHandle").equalTo(teleHandleStr);
 
@@ -118,7 +123,11 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "Incorrect Password", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(MainActivity.this, "User does not exist", Toast.LENGTH_SHORT).show();
+                        if (teleHandleStr.equals(doctorTeleHandle) && passwordStr.equals(doctorPassword)) {
+                            toDoctorHome(view);
+                        } else {
+                            Toast.makeText(MainActivity.this, "User does not exist", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 
@@ -729,6 +738,170 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    public void toDoctorHome(View view) {
+        setContentView(R.layout.activity_home_screen_doctor);
+        global_teleHandleStr = doctorTeleHandle;
+
+        FirebaseDatabase rootNode = FirebaseDatabase.getInstance("https://drbotv2-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        DatabaseReference reference = rootNode.getReference("Users");
+
+        Query checkUser = reference;
+
+        checkUser.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+
+                    long number_patientsLong = snapshot.getChildrenCount() - 1;
+                    String number_patientsStr = String.valueOf(number_patientsLong);
+
+                    TextView number_patients_tv = findViewById(R.id.number_patients);
+                    number_patients_tv.setText(number_patientsStr);
+
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+
+
+    }
+
+    public void toUserProfileDoctor(View view) {
+        setContentView(R.layout.activity_user_profile_doctor);
+
+
+        FirebaseDatabase rootNode = FirebaseDatabase.getInstance("https://drbotv2-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        DatabaseReference reference = rootNode.getReference("Users");
+
+        String teleHandleStr = global_teleHandleStr;
+
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
+
+        Query checkUser = reference.child(teleHandleStr).child("Consumables").orderByChild("untilDate").startAt(timeStamp).endAt("3000-12-31");
+
+        checkUser.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+
+                    DataSnapshot data = snapshot;
+
+                    String finalStr = "";
+                    for (DataSnapshot ds : data.getChildren()) {
+                        finalStr += ds.getKey() + "\n";
+                        finalStr += "Duration in Days: " + ds.child("duration").getValue(String.class) + "\n";
+                        finalStr += "Consume Until: " + ds.child("untilDate").getValue(String.class) + "\n";
+                        finalStr += "Reminder Times: " + ds.child("reminder_times").getValue().toString() + "\n";
+                        finalStr += "Remarks: " + ds.child("remarks").getValue(String.class) + "\n" + "\n";
+
+                    }
+
+
+                    TextView reminder1_tv = findViewById(R.id.user_profile_consumable_regime);
+                    reminder1_tv.setText(finalStr);
+
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+
+        Query checkUser1 = reference.child(teleHandleStr);
+
+        checkUser1.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+
+                    DataSnapshot ds = snapshot;
+
+                    String finalStr = "";
+
+                    finalStr += "Full Name: " + ds.child("fullName").getValue(String.class) + "\n";
+                    finalStr += "Telegram Handle: " + ds.child("teleHandle").getValue(String.class) + "\n";
+                    finalStr += "Gender: " + ds.child("gender").getValue().toString() + "\n";
+                    finalStr += "Birth Year: " + ds.child("birthYear").getValue().toString() + "\n";
+                    finalStr += "Phone Number: " + ds.child("phoneNo").getValue().toString() + "\n";
+                    finalStr += "Email: " + ds.child("email").getValue().toString() + "\n";
+
+                    int currentEXP = ((Long) ds.child("exp").getValue()).intValue();
+                    int level = currentEXP / 100;
+                    int currentTimelyConsumption = ((Long) ds.child("timelyConsumption").getValue()).intValue();
+                    int currentTotalConsumption = ((Long) ds.child("totalConsumption").getValue()).intValue();
+
+                    finalStr += "Timely Consumption: " + String.valueOf(currentTimelyConsumption) + "\n";
+                    finalStr += "Total Consumption: " + String.valueOf(currentTotalConsumption) + "\n" + "\n";
+
+
+
+
+                    TextView reminder1_tv = findViewById(R.id.user_profile_details);
+                    reminder1_tv.setText(finalStr);
+
+                    TextView teleHandle_tv = findViewById(R.id.user_profile_teleHandle);
+                    teleHandle_tv.setText(global_teleHandleStr);
+
+
+                    String levelStr = String.valueOf(level);
+                    TextView level_tv = findViewById(R.id.user_profile_level);
+                    level_tv.setText("Level: " + levelStr);
+
+                    int timelyConsumptionRate;
+
+                    if (currentTotalConsumption <= 0) {
+                        timelyConsumptionRate = 100;
+                    } else {
+                        timelyConsumptionRate = 100 * currentTimelyConsumption / currentTotalConsumption;
+                    }
+
+                    String timelyConsumptionRateStr = String.valueOf(timelyConsumptionRate) + "%";
+                    TextView timelyConsumptionRate_tv = findViewById(R.id.timely_consumption_rate);
+                    timelyConsumptionRate_tv.setText(timelyConsumptionRateStr);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+
+    }
+
+    public void doctorSearchButton(View view) {
+
+
+        FirebaseDatabase rootNode = FirebaseDatabase.getInstance("https://drbotv2-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        DatabaseReference reference = rootNode.getReference("Users");
+
+
+
+
+        TextInputLayout local_teleHandle;
+
+        local_teleHandle = findViewById(R.id.doctor_home_title);
+
+
+        String local_teleHandleStr = local_teleHandle.getEditText().getText().toString();
+
+        global_teleHandleStr = local_teleHandleStr;
+
+
+        if (local_teleHandleStr.isEmpty()) {
+            Toast.makeText(MainActivity.this, "Required fields have been left blank", Toast.LENGTH_SHORT).show();
+        } else if (local_teleHandleStr.charAt(0) == '@') {
+            Toast.makeText(MainActivity.this, "Please input Telegram Handle without the '@'", Toast.LENGTH_SHORT).show();
+        }
+
+        toUserProfileDoctor(view);
+
+    }
+
+    public void toDoctorConfigureRemindersButton(View view) {
+        setContentView(R.layout.activity_configure_reminders_doctor);
     }
 
 }
