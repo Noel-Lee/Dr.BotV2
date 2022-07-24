@@ -216,6 +216,8 @@ public class MainActivity extends AppCompatActivity {
         String genderStr = forgot_password_Gender.getEditText().getText().toString();
         String birthYearStr = forgot_password_BirthYear.getEditText().getText().toString();
 
+        global_teleHandleStr = teleHandleStr;
+
         try {
             int birthYearInt = Integer.parseInt(birthYearStr);
             if (birthYearInt > Calendar.getInstance().get(Calendar.YEAR)) {
@@ -224,6 +226,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Required fields have been left blank", Toast.LENGTH_SHORT).show();
             } else if (!(genderStr.equals("Male") || genderStr.equals("Female") || genderStr.isEmpty())) {
                 Toast.makeText(MainActivity.this, "Gender can only be 'Male', 'Female' or left blank", Toast.LENGTH_SHORT).show();
+            } else if (!passwordStr.equals(password2Str)) {
+                Toast.makeText(MainActivity.this, "Passwords have to be the same", Toast.LENGTH_SHORT).show();
             } else {
                 Query checkUser = reference.orderByChild("teleHandle").equalTo(teleHandleStr);
 
@@ -239,14 +243,17 @@ public class MainActivity extends AppCompatActivity {
                             if (birthYearFromDB.equals(birthYearStr)) {
 
 
-                                UserHelperClass helperClass = new UserHelperClass(teleHandleStr, passwordStr, password2Str, genderStr, birthYearStr, "", "", "", 0, 0, 0, new ArrayList<ReminderRecordsHelperClass>(), new ArrayList<RecordConsumptionHelperClass>());
-                                reference.child(teleHandleStr).setValue(helperClass);
+//                                UserHelperClass helperClass = new UserHelperClass(teleHandleStr, passwordStr, password2Str, genderStr, birthYearStr, "", "", "", 0, 0, 0, new ArrayList<ReminderRecordsHelperClass>(), new ArrayList<RecordConsumptionHelperClass>());
+                                reference.child(teleHandleStr).child("password").setValue(passwordStr);
+                                reference.child(teleHandleStr).child("password2").setValue(password2Str);
 
                                 Toast.makeText(MainActivity.this, "Password has been reset", Toast.LENGTH_SHORT).show();
 
-                                setContentView(R.layout.activity_home_screen);
-                                TextView home_teleHandle_title = findViewById(R.id.home_teleHandle);
-                                home_teleHandle_title.setText(teleHandleStr);
+                                toHomeScreen(view);
+
+//                                setContentView(R.layout.activity_home_screen);
+//                                TextView home_teleHandle_title = findViewById(R.id.home_teleHandle);
+//                                home_teleHandle_title.setText(teleHandleStr);
 
 
                             } else {
