@@ -220,10 +220,11 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             int birthYearInt = Integer.parseInt(birthYearStr);
-            if (birthYearInt > Calendar.getInstance().get(Calendar.YEAR)) {
-                Toast.makeText(MainActivity.this, "Please input an appropriate year", Toast.LENGTH_SHORT).show();
-            } else if (teleHandleStr.isEmpty() || passwordStr.isEmpty() || password2Str.isEmpty() || birthYearStr.isEmpty()) {
+
+            if (teleHandleStr.isEmpty() || passwordStr.isEmpty() || password2Str.isEmpty() || birthYearStr.isEmpty()) {
                 Toast.makeText(MainActivity.this, "Required fields have been left blank", Toast.LENGTH_SHORT).show();
+            } else if (birthYearInt > Calendar.getInstance().get(Calendar.YEAR)) {
+                Toast.makeText(MainActivity.this, "Please input an appropriate year", Toast.LENGTH_SHORT).show();
             } else if (!(genderStr.equals("Male") || genderStr.equals("Female") || genderStr.isEmpty())) {
                 Toast.makeText(MainActivity.this, "Gender can only be 'Male', 'Female' or left blank", Toast.LENGTH_SHORT).show();
             } else if (!passwordStr.equals(password2Str)) {
@@ -909,6 +910,76 @@ public class MainActivity extends AppCompatActivity {
 
     public void toDoctorConfigureRemindersButton(View view) {
         setContentView(R.layout.activity_configure_reminders_doctor);
+    }
+
+    public void toHealthCheckupRecommendationScreen(View view) {
+        setContentView(R.layout.activity_health_recommendation_checkup_screen);
+
+        FirebaseDatabase rootNode = FirebaseDatabase.getInstance("https://drbotv2-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        DatabaseReference reference = rootNode.getReference("Users");
+
+        String teleHandleStr = global_teleHandleStr;
+
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
+
+        Query checkUser = reference.child(teleHandleStr);
+
+        checkUser.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+
+                    DataSnapshot data = snapshot;
+
+                    String finalStr = "";
+
+                    snapshot.child(teleHandleStr).child("email").getValue(String.class);
+
+                    String genderStr = snapshot.child("gender").getValue(String.class);
+                    String birthYearStr = snapshot.child("birthYear").getValue(String.class);
+                    int birthYear = 0;
+                    int age = 0;
+
+                    try {
+                        birthYear = Integer.parseInt(birthYearStr);
+                        age = Calendar.getInstance().get(Calendar.YEAR) - birthYear;
+                    }
+                    catch (NumberFormatException ex){
+                        Toast.makeText(MainActivity.this, "Unable to retrieve Year of Birth of User", Toast.LENGTH_SHORT).show();
+                    }
+
+                    if (age >= 18) {
+                        finalStr += "BMI Waist Circumference Test (Once a year)\n\n";
+                        finalStr += "Blood pressure measurement (Once every 2 years or more frequently if recommended by a doctor)\n\n";
+                    }
+                    if (age >= 40) {
+                        finalStr += "Fasting blood glucose or HbaA1c\n\n";
+                        finalStr += "Fasting or non-fasting cholesterol profile\n\n";
+                    }
+                    if (age >= 50) {
+                        finalStr += "Fecal Immunochemical Test (Stool Test for blood) (Once a year)\n\n";
+                        finalStr += "Colonoscopy (Once every 10 years)\n\n";
+                    }
+                    if (age >= 25 && age <= 29 && !genderStr.equals("Male")) {
+                        finalStr += "(FEMALE) Pap Smear (Once every 3 years)\n\n";
+                    }
+                    if (age >= 30 && !genderStr.equals("Male")) {
+                        finalStr += "(FEMALE) Human Papillomavirus (HPV) DNA Test (Once every 5 years)\n\n";
+                    }
+                    if (age >= 50 && age <= 69 && !genderStr.equals("Male")) {
+                        finalStr += "(FEMALE) Mammogram (Once every 2 years)\n\n";
+                    }
+
+
+                    TextView recommendation1_tv = findViewById(R.id.recommendation1);
+                    recommendation1_tv.setText(finalStr);
+
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
     }
 
 }

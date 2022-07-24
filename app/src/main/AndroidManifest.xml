@@ -14,6 +14,9 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
+            android:name=".activity_health_recommendation_checkup_screen"
+            android:exported="false" />
+        <activity
             android:name=".activity_configure_reminders_doctor"
             android:exported="false" />
         <activity
