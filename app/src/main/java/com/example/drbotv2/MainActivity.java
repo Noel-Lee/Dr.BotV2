@@ -329,8 +329,7 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
 
-                    TextView home_teleHandle_title = findViewById(R.id.home_teleHandle);
-                    home_teleHandle_title.setText(global_teleHandleStr);
+
 
                     String number_reminders = String.valueOf(snapshot.getChildrenCount());
 
@@ -359,6 +358,9 @@ public class MainActivity extends AppCompatActivity {
 
                     TextView number_reminders_tv = findViewById(R.id.level);
                     number_reminders_tv.setText("Level: " + levelStr);
+
+                    TextView home_teleHandle_title = findViewById(R.id.home_teleHandle);
+                    home_teleHandle_title.setText(global_teleHandleStr);
                 }
             }
             @Override
