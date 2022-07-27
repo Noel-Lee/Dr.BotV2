@@ -5,12 +5,14 @@ import java.util.ArrayList;
 public class RecordConsumptionHelperClass {
 
     String nameDateTime;
+    String remarks;
 
     public RecordConsumptionHelperClass() {
     }
 
-    public RecordConsumptionHelperClass(String nameDateTime) {
+    public RecordConsumptionHelperClass(String nameDateTime, String remarks) {
         this.nameDateTime = nameDateTime;
+        this.remarks = remarks;
     }
 
     public String getNameDateTime() {

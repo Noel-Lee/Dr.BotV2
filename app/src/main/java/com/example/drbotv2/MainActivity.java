@@ -158,26 +158,43 @@ public class MainActivity extends AppCompatActivity {
         String genderStr = regGender.getEditText().getText().toString();
         String birthYearStr = regBirthYear.getEditText().getText().toString();
 
-        try {
-            int birthYearInt = Integer.parseInt(birthYearStr);
-            if (birthYearInt > Calendar.getInstance().get(Calendar.YEAR)) {
-                Toast.makeText(MainActivity.this, "Please input an appropriate year", Toast.LENGTH_SHORT).show();
-            } else if (teleHandleStr.isEmpty() || passwordStr.isEmpty() || password2Str.isEmpty() || birthYearStr.isEmpty()) {
-                Toast.makeText(MainActivity.this, "Required fields have been left blank", Toast.LENGTH_SHORT).show();
-            } else if (teleHandleStr.charAt(0) == '@') {
-                Toast.makeText(MainActivity.this, "Remove '@' from telegram handle", Toast.LENGTH_SHORT).show();
-            } else if (!(genderStr.equals("Male") || genderStr.equals("Female") || genderStr.isEmpty())) {
-                Toast.makeText(MainActivity.this, "Gender can only be 'Male', 'Female' or left blank", Toast.LENGTH_SHORT).show();
-            } else if (!passwordStr.equals(password2Str)) {
-                Toast.makeText(MainActivity.this, "Passwords have to be the same", Toast.LENGTH_SHORT).show();
-            } else {
-                UserHelperClass helperClass = new UserHelperClass(teleHandleStr, passwordStr, password2Str, genderStr, birthYearStr, "", "", "",  0, 0, 0, new ArrayList<ReminderRecordsHelperClass>(), new ArrayList<RecordConsumptionHelperClass>());
-                reference.child(teleHandleStr).setValue(helperClass);
-                setContentView(R.layout.activity_main);
+        Query checkUser = reference.orderByChild("teleHandle").equalTo(teleHandleStr);
+
+        checkUser.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Toast.makeText(MainActivity.this, "User already exists", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    try {
+                        int birthYearInt = Integer.parseInt(birthYearStr);
+                        if (birthYearInt > Calendar.getInstance().get(Calendar.YEAR)) {
+                            Toast.makeText(MainActivity.this, "Please input an appropriate year", Toast.LENGTH_SHORT).show();
+                        } else if (teleHandleStr.isEmpty() || passwordStr.isEmpty() || password2Str.isEmpty() || birthYearStr.isEmpty()) {
+                            Toast.makeText(MainActivity.this, "Required fields have been left blank", Toast.LENGTH_SHORT).show();
+                        } else if (teleHandleStr.charAt(0) == '@') {
+                            Toast.makeText(MainActivity.this, "Remove '@' from telegram handle", Toast.LENGTH_SHORT).show();
+                        } else if (!(genderStr.equals("Male") || genderStr.equals("Female") || genderStr.isEmpty())) {
+                            Toast.makeText(MainActivity.this, "Gender can only be 'Male', 'Female' or left blank", Toast.LENGTH_SHORT).show();
+                        } else if (!passwordStr.equals(password2Str)) {
+                            Toast.makeText(MainActivity.this, "Passwords have to be the same", Toast.LENGTH_SHORT).show();
+                        } else {
+                            UserHelperClass helperClass = new UserHelperClass(teleHandleStr, passwordStr, password2Str, genderStr, birthYearStr, "", "", "",  0, 0, 0, new ArrayList<ReminderRecordsHelperClass>(), new ArrayList<RecordConsumptionHelperClass>());
+                            reference.child(teleHandleStr).setValue(helperClass);
+                            setContentView(R.layout.activity_main);
+                        }
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(MainActivity.this, "Please input year in numbers", Toast.LENGTH_SHORT).show();
+                    }
+
+                }
             }
-        } catch (NumberFormatException e) {
-            Toast.makeText(MainActivity.this, "Please input year in numbers", Toast.LENGTH_SHORT).show();
-        }
+
+            @Override public void onCancelled(@NonNull DatabaseError error) {
+                }
+            });
+
 
 
     }
@@ -594,7 +611,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
 
-                        RecordConsumptionHelperClass recordConsumptionHelperClass = new RecordConsumptionHelperClass(record_nameStr + "," + record_dateStr + "," + record_timeStr);
+                        RecordConsumptionHelperClass recordConsumptionHelperClass = new RecordConsumptionHelperClass(record_nameStr + "," + record_dateStr + "," + record_timeStr, record_remarksStr);
                         reference.child(global_teleHandleStr).child("Consumption Data").child(record_nameStr + "," + record_dateStr + "," + record_timeStr).setValue(recordConsumptionHelperClass);
 
                     } else {
@@ -653,6 +670,50 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+    }
+
+    public void deleteRecordConsumptionButton(View view) {
+
+        FirebaseDatabase rootNode = FirebaseDatabase.getInstance("https://drbotv2-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        DatabaseReference reference = rootNode.getReference("Users");
+
+        String teleHandleStr = global_teleHandleStr;
+
+        EditText record_name, record_date, record_time, record_remarks;
+
+        record_name = findViewById(R.id.record_consumption_name);
+        record_date = findViewById(R.id.record_consumption_date);
+        record_time = findViewById(R.id.record_consumption_time);
+        record_remarks = findViewById(R.id.record_consumption_remarks);
+
+        String record_nameStr = record_name.getText().toString();
+        String record_dateStr = record_date.getText().toString();
+        String record_timeStr = record_time.getText().toString();
+        String record_remarksStr = record_remarks.getText().toString();
+
+        if (record_nameStr.isEmpty() || record_dateStr.isEmpty() || record_timeStr.isEmpty()) {
+            Toast.makeText(MainActivity.this, "Required fields have been left blank", Toast.LENGTH_SHORT).show();
+        } else {
+            Query checkUser = reference.child(teleHandleStr).child("Consumption Data").orderByChild("nameDateTime").equalTo(record_nameStr + "," + record_dateStr + "," + record_timeStr);
+
+            checkUser.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        reference.child(teleHandleStr).child("Consumption Data").child(record_nameStr + "," + record_dateStr + "," + record_timeStr).setValue(null);
+                        Toast.makeText(MainActivity.this, "Consumption record has been deleted", Toast.LENGTH_SHORT).show();
+
+                    } else {
+                        Toast.makeText(MainActivity.this, "Consumption record does not exist", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
     }
 
     public void toUserProfileButtonByUser(View view) {

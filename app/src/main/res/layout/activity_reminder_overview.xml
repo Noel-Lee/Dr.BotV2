@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:paddingTop="20dp"
-        android:text="Configure Medication Regime"
+        android:text="Consumables Regime Overview"
         android:textSize="30dp"
         android:textStyle="bold" />
 
